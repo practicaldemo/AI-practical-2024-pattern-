@@ -1,24 +1,48 @@
-import re
 
-def chatbot_response(user_input):
-    user_input = user_input.lower()
-    rules = {
-        r'.* hello .*|.* hi .*': "Hello! How can I help you today?",
-        r'.* how are you .*': "I'm just a script, but I'm doing well!",
-        r'.* name .*': "I am a simple rule-based AI chatbot.",
-        r'.* bye .*': "Goodbye! Have a great day ahead!",
-    }
-    
-    for pattern, response in rules.items():
-        if re.match(pattern, user_input):
-            return response
-            
-    return "I'm sorry, I don't understand that."
+def chatbot_response(message):
+    text = message.lower().strip()
 
-# Simulated conversation
-messages = ["Hi", "What is your name?", "How are you?", "Bye"]
 
-for msg in messages:
-    print(f"You: {msg}")
-    print(f"Bot: {chatbot_response(msg)}")
-    
+    if any(word in text for word in ["hello", "hi", "hey"]):
+        return "Hello! How can I help you?"
+
+
+    if "bfs" in text:
+        return "BFS explores states level by level."
+
+
+    if "dfs" in text:
+        return "DFS explores deeply before backtracking."
+
+
+    if "a*" in text or "astar" in text:
+        return "A* uses f(n) = g(n) + h(n) to guide the search."
+
+
+    if "viva" in text:
+        return "Prepare definitions, algorithms, complexity and code logic."
+
+
+    if "lab" in text or "experiment" in text:
+        return "Please study the aim, theory, algorithm, code and output."
+
+
+    return "Sorry, I do not understand that question."
+
+
+
+
+print("Simple Rule-Based Chatbot")
+print("Type 'bye' to exit.")
+
+
+while True:
+    message = input("You: ")
+
+
+    if message.lower().strip() in ["bye", "exit", "quit"]:
+        print("Bot: Goodbye! Have a nice day.")
+        break
+
+
+    print("Bot:", chatbot_response(message))
