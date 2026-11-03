@@ -1,4 +1,4 @@
-#Q)Implementation of Tower of Hanoi Using State Space Search
+
 def tower_of_hanoi(n, source, auxiliary, destination):
     if n == 0:
         return
