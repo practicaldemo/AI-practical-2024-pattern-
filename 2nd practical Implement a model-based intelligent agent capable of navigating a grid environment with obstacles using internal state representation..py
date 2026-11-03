@@ -1,34 +1,100 @@
-class ModelBasedAgent:
-    def __init__(self, grid_size):
-        self.grid_size = grid_size
-        self.internal_state = set()  # Stores visited locations
 
-    def perceive_and_act(self, current_pos, obstacles, goal):
-        self.internal_state.add(current_pos)
-        if current_pos == goal:
-            return "Goal Reached"
-        x, y = current_pos
-        possible_moves = [(x+1, y), (x-1, y), (x, y+1), (x, y-1)]
-        valid_moves = [
-            m for m in possible_moves 
-            if 0 <= m[0] < self.grid_size and 0 <= m[1] < self.grid_size 
-            and m not in obstacles and m not in self.internal_state
-        ]
-        if valid_moves:
-            return valid_moves[0]  # Move to the first valid unvisited state
-        return "Stuck"
+import heapq
 
-# Example usage
-agent = ModelBasedAgent(grid_size=4)
-obstacles = {(1, 1), (2, 2)}
-pos = (0, 0)
-goal = (3, 3)
+# Goal state
+goal = (1, 2, 3,
+        4, 5, 6,
+        7, 8, 0)
 
-for step in range(10):
-    print(f"Step {step}: Current Position {pos}")
-    action = agent.perceive_and_act(pos, obstacles, goal)
-    if action == "Goal Reached" or action == "Stuck":
-        print(action)
-        break
-    pos = action
-    
+
+# Heuristic function: Manhattan Distance
+def h(s):
+    d = 0
+
+    for i in range(9):
+        if s[i] != 0:
+            j = goal.index(s[i])
+
+            d += abs(i // 3 - j // 3) + abs(i % 3 - j % 3)
+
+    return d
+
+
+# A* Search Algorithm
+def astar(start):
+
+    # Priority queue: (f, g, state, path)
+    q = [(h(start), 0, start, [])]
+
+    # Set of visited states
+    seen = set()
+
+    while q:
+
+        # Get state with minimum f value
+        f, g, s, path = heapq.heappop(q)
+
+        # Skip if already visited
+        if s in seen:
+            continue
+
+        # Mark state as visited
+        seen.add(s)
+
+        # Check whether goal is reached
+        if s == goal:
+            return path + [s]
+
+        # Find position of blank (0)
+        z = s.index(0)
+
+        # Convert position into row and column
+        r, c = divmod(z, 3)
+
+        # Possible moves: Down, Up, Right, Left
+        for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+
+            nr, nc = r + dr, c + dc
+
+            # Check whether the move is valid
+            if 0 <= nr < 3 and 0 <= nc < 3:
+
+                # Find new position
+                x = nr * 3 + nc
+
+                # Create new state
+                t = list(s)
+
+                # Swap blank with adjacent tile
+                t[z], t[x] = t[x], t[z]
+
+                # Convert list back to tuple
+                t = tuple(t)
+
+                # Calculate f = g + h and add to queue
+                heapq.heappush(
+                    q,
+                    (g + 1 + h(t), g + 1, t, path + [s])
+                )
+
+
+# Initial state
+start = (1, 2, 3,
+         4, 0, 6,
+         7, 5, 8)
+
+
+# Find solution
+solution = astar(start)
+
+
+# Display solution
+print("Solution:")
+print()
+
+for s in solution:
+
+    print(s[0:3])
+    print(s[3:6])
+    print(s[6:9])
+    print()
