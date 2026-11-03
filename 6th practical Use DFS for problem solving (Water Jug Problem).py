@@ -1,33 +1,61 @@
-def dfs_water_jug(capacity_x, capacity_y, target):
-    stack = [((0, 0), [])]
-    visited = set()
-    
-    while stack:
-        (x, y), path = stack.pop()
-        
-        if (x, y) in visited:
-            continue
-            
-        visited.add((x, y))
-        path = path + [(x, y)]
-        
-        if x == target or y == target:
-            return path
-            
-        # Generate rules
-        states = set([
-            (capacity_x, y),  # Fill X
-            (x, capacity_y),  # Fill Y
-            (0, y),           # Empty X
-            (x, 0),           # Empty Y
-            (x - min(x, capacity_y - y), y + min(x, capacity_y - y)),  # Pour X to Y
-            (x + min(y, capacity_x - x), y - min(y, capacity_x - x))   # Pour Y to X
-        ])
-        
-        for state in states:
-            if state not in visited:
-                stack.append((state, path))
-                
-    return None
 
-print("Water Jug DFS Path:", dfs_water_jug(4, 3, 2))
+def dfs_maze(grid, start, goal):
+    rows = len(grid)
+    cols = len(grid[0])
+
+    visited = set()
+    path = []
+
+    def dfs(r, c):
+        # Check boundaries
+        if not (0 <= r < rows and 0 <= c < cols):
+            return False
+
+        # Check wall or visited cell
+        if grid[r][c] == 1 or (r, c) in visited:
+            return False
+
+        visited.add((r, c))
+        path.append((r, c))
+
+        # Goal reached
+        if (r, c) == goal:
+            return True
+
+        # Down, Right, Up, Left
+        directions = [
+            (1, 0),
+            (0, 1),
+            (-1, 0),
+            (0, -1)
+        ]
+
+        for dr, dc in directions:
+            if dfs(r + dr, c + dc):
+                return True
+
+        # Backtracking
+        path.pop()
+        return False
+
+    return path if dfs(*start) else None
+
+
+# 0 = Open path
+# 1 = Wall
+
+maze = [
+    [0, 1, 0, 0, 0],
+    [0, 1, 0, 1, 0],
+    [0, 0, 0, 1, 0],
+    [1, 1, 0, 0, 0],
+    [0, 0, 0, 1, 0]
+]
+
+start = (0, 0)
+goal = (4, 2)
+
+path = dfs_maze(maze, start, goal)
+
+print("DFS path:", path)
+print("Path found:", path is not None)
