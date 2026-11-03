@@ -1,37 +1,55 @@
-def is_safe(board, row, col, n):
-    for i in range(col):
-        if board[row][i] == 1:
+#Q)Backtracking Search for the 8-Queens Constraint Satisfaction Problem
+# 8-Queens using Backtracking
+
+N = 8
+board = [-1] * N
+
+
+def is_safe(row, col):
+    for previous_row in range(row):
+        previous_col = board[previous_row]
+
+        # Same column
+        if previous_col == col:
             return False
-            
-    for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
-        if board[i][j] == 1:
+
+        # Same diagonal
+        if abs(previous_row - row) == abs(previous_col - col):
             return False
-            
-    for i, j in zip(range(row, n, 1), range(col, -1, -1)):
-        if board[i][j] == 1:
-            return False
-            
+
     return True
 
-def solve_n_queens(board, col, n):
-    if col >= n:
+
+def solve(row):
+    # All queens are placed
+    if row == N:
         return True
-        
-    for i in range(n):
-        if is_safe(board, i, col, n):
-            board[i][col] = 1
-            
-            if solve_n_queens(board, col + 1, n):
+
+    # Try every column
+    for col in range(N):
+        if is_safe(row, col):
+            board[row] = col
+
+            # Place queen in next row
+            if solve(row + 1):
                 return True
-                
-            board[i][col] = 0  # Backtrack
-            
+
+            # Backtrack
+            board[row] = -1
+
     return False
 
-n = 8
-board = [[0]*n for _ in range(n)]
 
-if solve_n_queens(board, 0, n):
-    print("8-Queens Solution:")
-    for row in board:
-        print(row)
+# Solve the problem
+if solve(0):
+    print("Solution found:")
+
+    for row in range(N):
+        for col in range(N):
+            if board[row] == col:
+                print("Q", end=" ")
+            else:
+                print(".", end=" ")
+        print()
+else:
+    print("No solution found")
