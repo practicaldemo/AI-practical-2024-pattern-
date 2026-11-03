@@ -1,56 +1,117 @@
-import heapq
 
-class PuzzleState:
-    def __init__(self, board, parent, move, depth, cost):
-        self.board = board
-        self.parent = parent
-        self.move = move
-        self.depth = depth
-        self.cost = cost
+def winner(board):
+    lines = [
+        (0, 1, 2),
+        (3, 4, 5),
+        (6, 7, 8),
+        (0, 3, 6),
+        (1, 4, 7),
+        (2, 5, 8),
+        (0, 4, 8),
+        (2, 4, 6)
+    ]
 
-    def __lt__(self, other):
-        return self.cost < other.cost
+    for a, b, c in lines:
+        if board[a] != " " and board[a] == board[b] == board[c]:
+            return board[a]
 
-def manhattan_distance(board, goal):
-    dist = 0
-    for i in range(1, 9):
-        xi, yi = divmod(board.index(i), 3)
-        xg, yg = divmod(goal.index(i), 3)
-        dist += abs(xi - xg) + abs(yi - yg)
-    return dist
+    return None
 
-def a_star_8_puzzle(start, goal):
-    pq = []
-    visited = set()
-    start_state = PuzzleState(start, None, "", 0, manhattan_distance(start, goal))
-    heapq.heappush(pq, start_state)
-    
-    while pq:
-        current = heapq.heappop(pq)
-        
-        if current.board == goal:
-            return current.depth
-            
-        visited.add(tuple(current.board))
-        
-        zero_idx = current.board.index(0)
-        x, y = divmod(zero_idx, 3)
-        moves = {'U': (x-1, y), 'D': (x+1, y), 'L': (x, y-1), 'R': (x, y+1)}
-        
-        for move, (nx, ny) in moves.items():
-            if 0 <= nx < 3 and 0 <= ny < 3:
-                new_idx = nx * 3 + ny
-                new_board = list(current.board)
-                new_board[zero_idx], new_board[new_idx] = new_board[new_idx], new_board[zero_idx]
-                
-                if tuple(new_board) not in visited:
-                    depth = current.depth + 1
-                    cost = depth + manhattan_distance(new_board, goal)
-                    heapq.heappush(pq, PuzzleState(new_board, current, move, depth, cost))
-                    
-    return -1
 
-# Example usage
-start_state = [1, 2, 3, 4, 0, 5, 6, 7, 8]
-goal_state = [1, 2, 3, 4, 5, 6, 7, 8, 0]
-print("Moves to solve:", a_star_8_puzzle(start_state, goal_state))
+def terminal(board):
+    return winner(board) is not None or " " not in board
+
+
+def utility(board):
+    w = winner(board)
+
+    if w == "X":
+        return 1
+    if w == "O":
+        return -1
+
+    return 0
+
+
+def alphabeta(board, maximizing, alpha, beta):
+    if terminal(board):
+        return utility(board)
+
+    if maximizing:
+        value = -float("inf")
+
+        for i in range(9):
+            if board[i] == " ":
+                board[i] = "X"
+
+                value = max(
+                    value,
+                    alphabeta(board, False, alpha, beta)
+                )
+
+                board[i] = " "
+
+                alpha = max(alpha, value)
+
+                if alpha >= beta:
+                    break
+
+        return value
+
+    else:
+        value = float("inf")
+
+        for i in range(9):
+            if board[i] == " ":
+                board[i] = "O"
+
+                value = min(
+                    value,
+                    alphabeta(board, True, alpha, beta)
+                )
+
+                board[i] = " "
+
+                beta = min(beta, value)
+
+                if alpha >= beta:
+                    break
+
+        return value
+
+
+def best_move(board):
+    best = None
+    best_val = -float("inf")
+
+    for i in range(9):
+        if board[i] == " ":
+            board[i] = "X"
+
+            val = alphabeta(
+                board,
+                False,
+                -float("inf"),
+                float("inf")
+            )
+
+            board[i] = " "
+
+            if val > best_val:
+                best = i
+                best_val = val
+
+    return best, best_val
+
+
+# Current Tic-Tac-Toe board
+board = [
+    "X", "O", "X",
+    " ", "O", " ",
+    " ", " ", " "
+]
+
+move, value = best_move(board)
+
+print("Best move index:", move)
+print("Minimax value:", value)
